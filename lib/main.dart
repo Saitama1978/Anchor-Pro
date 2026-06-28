@@ -12,19 +12,17 @@ class AnchorCalculatorApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Anchor Calculator',
+      title: 'Anchor Calculator Pro',
       theme: ThemeData(
         brightness: Brightness.dark,
-        primaryColor: const Color(0xFF1B2A4A), // Deep Navy Blue (Maritime Tone)
-        scaffoldBackgroundColor: const Color(0xFF0F172A), // Dark Slate Background
+        primaryColor: const Color(0xFF1B2A4A),
+        scaffoldBackgroundColor: const Color(0xFF0F172A),
         colorScheme: const ColorScheme.dark(
           primary: Colors.tealAccent,
           secondary: Colors.teal,
         ),
         inputDecorationTheme: InputDecorationTheme(
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: const BorderSide(color: Colors.tealAccent, width: 2.0),
@@ -49,13 +47,17 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
   final _depthController = TextEditingController();
   final _loaController = TextEditingController();
   final _shacklesController = TextEditingController(text: "7");
+  
+  String _selectedSeabed = 'Sand';
+  final List<String> _seabedTypes = ['Sand', 'Mud', 'Clay', 'Rock'];
 
   double _totalChain = 0.0;
-  double _turningCircle = 0.0;
+  double _turningCircleMeters = 0.0;
+  double _turningCircleCables = 0.0;
   String _statusMessage = "";
   Color _statusColor = Colors.white;
 
-  void _calculate() {
+  void _calculatePro() {
     double depth = double.tryParse(_depthController.text) ?? 0.0;
     double loa = double.tryParse(_loaController.text) ?? 0.0;
     double shackles = double.tryParse(_shacklesController.text) ?? 0.0;
@@ -71,23 +73,45 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
 
     // 1 shackle = 27.5 meters
     double chainInMeters = shackles * 27.5;
-    // Turning Circle Radius = Chain Length + LOA
-    double radius = chainInMeters + loa;
-    // Scope Ratio = Chain Length / Depth
+    _totalChain = chainInMeters;
+
+    if (chainInMeters <= depth) {
+      setState(() {
+        _statusMessage = "❌ Error: Mas mahaba ang lalim ng dagat kaysa sa kadena!";
+        _statusColor = Colors.redAccent;
+        _turningCircleMeters = 0.0;
+      });
+      return;
+    }
+
+    // Advanced: Trigonometric Horizontal Distance (Pythagorean Theorem)
+    double horizontalDistance = sqrt(pow(chainInMeters, 2) - pow(depth, 2));
+    
+    // Total Turning Circle Radius = Horizontal Distance + Ship's LOA
+    double radiusMeters = horizontalDistance + loa;
+    _turningCircleMeters = radiusMeters;
+    
+    // Convert meters to Cables (1 Cable = 185.2 Meters)
+    _turningCircleCables = radiusMeters / 185.2;
+
+    // Scope Ratio Calculation
     double scope = chainInMeters / depth;
 
-    setState(() {
-      _totalChain = chainInMeters;
-      _turningCircle = radius;
+    // Safety Threshold Configurations base sa Seabed Type
+    double safeMinScope = 4.0; 
+    if (_selectedSeabed == 'Mud') safeMinScope = 5.0; // Kailangan ng mas mahabang kadena sa putik
+    if (_selectedSeabed == 'Clay') safeMinScope = 3.5; // Maganda ang kapit ng clay
+    if (_selectedSeabed == 'Rock') safeMinScope = 6.0; // Madaling sumadsad sa bato kaya kailangan ng bigat ng kadena
 
-      if (scope < 3) {
-        _statusMessage = "⚠️ Masyadong maikli ang kadena!\nScope Ratio: ${scope.toStringAsFixed(1)}";
+    setState(() {
+      if (scope < safeMinScope) {
+        _statusMessage = "⚠️ WARNING: Short Scope for $_selectedSeabed bottom!\nScope Ratio: ${scope.toStringAsFixed(1)} (Min Safe: $safeMinScope)";
         _statusColor = Colors.redAccent;
-      } else if (scope >= 3 && scope <= 5) {
-        _statusMessage = "✅ Ligtas para sa Good Weather.\nScope Ratio: ${scope.toStringAsFixed(1)}";
+      } else if (scope >= safeMinScope && scope <= (safeMinScope + 2)) {
+        _statusMessage = "✅ SAFE: Good holding power for $_selectedSeabed.\nScope Ratio: ${scope.toStringAsFixed(1)}";
         _statusColor = Colors.greenAccent;
       } else {
-        _statusMessage = "🌊 Heavy Scope! Ligtas sa Rough Weather.\nScope Ratio: ${scope.toStringAsFixed(1)}";
+        _statusMessage = "🌊 HEAVY SCOPE: Excellent safety margins.\nScope Ratio: ${scope.toStringAsFixed(1)}";
         _statusColor = Colors.blueAccent;
       }
     });
@@ -106,7 +130,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          '⚓ ANCHOR CALCULATOR',
+          '⚓ ANCHOR CALCULATOR PRO',
           style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
         ),
         backgroundColor: const Color(0xFF1E293B),
@@ -150,108 +174,36 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                         prefixIcon: Icon(Icons.link),
                       ),
                     ),
-                    const SizedBox(height: 25),
-                    ElevatedButton.icon(
-                      onPressed: _calculate,
-                      icon: const Icon(Icons.calculate, color: Colors.white),
-                      label: const Text(
-                        'CALCULATE',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    const SizedBox(height: 20),
+                    
+                    // Dropdown para sa Seabed Type
+                    DropdownButtonFormField<String>(
+                      value: _selectedSeabed,
+                      decoration: const InputDecoration(
+                        labelText: 'Seabed Type (Bottom Condition)',
+                        prefixIcon: Icon(Icons.layers),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0D9488), // Teal color
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 5,
-                      ),
+                      items: _seabedTypes.map((String type) {
+                        return DropdownMenuItem<String>(
+                          value: type,
+                          child: Text(type),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedSeabed = newValue!;
+                        });
+                      },
                     ),
                     const SizedBox(height: 25),
                     
-                    // Box ng Resulta
-                    if (_statusMessage.isNotEmpty) ...[
-                      Card(
-                        color: const Color(0xFF1E293B),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 6,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_totalChain > 0) ...[
-                                Row(
-                                  children: [
-                                    const Icon(Icons.linear_scale, color: Colors.white70),
-                                    const SizedBox(width: 10),
-                                    Text(
-                                      'Total Chain: ${_totalChain.toStringAsFixed(1)} m',
-                                      style: const TextStyle(fontSize: 16, color: Colors.white70),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(color: Colors.white24, height: 20),
-                                Row(
-                                  children: [
-                                    const Icon(Icons.radar, color: Colors.tealAccent),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Text(
-                                        'Turning Circle: ${_turningCircle.toStringAsFixed(1)} m',
-                                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.tealAccent),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const Divider(color: Colors.white24, height: 20),
-                              ],
-                              Text(
-                                _statusMessage,
-                                style: TextStyle(fontSize: 15, color: _statusColor, fontWeight: FontWeight.bold, height: 1.4),
-                              ),
-                            ],
-                          ),
-                        ),
+                    ElevatedButton.icon(
+                      onPressed: _calculatePro,
+                      icon: const Icon(Icons.analytics, color: Colors.white),
+                      label: const Text(
+                        'CALCULATE PRO',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-            
-            // Modern Developer Credits sa Pinaka-ilalim ng Screen
-            Card(
-              color: const Color(0xFF1E293B),
-              margin: const EdgeInsets.only(top: 10),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: const BorderSide(color: Colors.white10, width: 1),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.terminal, color: Colors.tealAccent, size: 18),
-                    SizedBox(width: 8),
-                    Text(
-                      'Developed by: ',
-                      style: TextStyle(fontSize: 13, color: Colors.white60),
-                    ),
-                    Text(
-                      'Renante Fullo',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.tealAccent),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0D9488),
+                        padding:Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
