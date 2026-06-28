@@ -133,7 +133,6 @@ class _CalculatorTabState extends State<CalculatorTab> {
   final _loaController = TextEditingController();
   final _shacklesController = TextEditingController(text: "7");
   
-  // Mga baguhang controllers para sa detalyadong GPS input
   final _latDegController = TextEditingController();
   final _latMinController = TextEditingController();
   final _lngDegController = TextEditingController();
@@ -156,7 +155,6 @@ class _CalculatorTabState extends State<CalculatorTab> {
     double loa = double.tryParse(_loaController.text) ?? 0.0;
     double shackles = double.tryParse(_shacklesController.text) ?? 0.0;
 
-    // Pagbuo ng maayos na string format para sa GPS position logs
     String latPsn = "N/A";
     if (_latDegController.text.isNotEmpty && _latMinController.text.isNotEmpty) {
       latPsn = "${_latDegController.text}° ${_latMinController.text}' $_latDirection";
@@ -253,206 +251,207 @@ class _CalculatorTabState extends State<CalculatorTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _depthController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Water Depth (Meters)',
-                      prefixIcon: Icon(Icons.waves),
-                    ),
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _depthController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Water Depth (Meters)',
+                    prefixIcon: Icon(Icons.waves),
                   ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _loaController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: "Ship's LOA (Meters)",
-                      prefixIcon: Icon(Icons.directions_boat),
-                    ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: _loaController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: "Ship's LOA (Meters)",
+                    prefixIcon: Icon(Icons.directions_boat),
                   ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _shacklesController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    decoration: const InputDecoration(
-                      labelText: 'Shackles to Let Go',
-                      prefixIcon: Icon(Icons.link),
-                    ),
+                ),
+                const SizedBox(height: 15),
+                TextField(
+                  controller: _shacklesController,
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(
+                    labelText: 'Shackles to Let Go',
+                    prefixIcon: Icon(Icons.link),
                   ),
-                  const SizedBox(height: 15),
-                  DropdownButtonFormField<String>(
-                    value: _selectedSeabed,
-                    decoration: const InputDecoration(
-                      labelText: 'Seabed Type (Bottom Condition)',
-                      prefixIcon: Icon(Icons.layers),
-                    ),
-                    items: _seabedTypes.map((String type) {
-                      return DropdownMenuItem<String>(value: type, child: Text(type));
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() { _selectedSeabed = newValue!; });
-                    },
+                ),
+                const SizedBox(height: 15),
+                DropdownButtonFormField<String>(
+                  value: _selectedSeabed,
+                  decoration: const InputDecoration(
+                    labelText: 'Seabed Type (Bottom Condition)',
+                    prefixIcon: Icon(Icons.layers),
                   ),
-                  const SizedBox(height: 20),
-                  
-                  // --- BAGONG SAKOP: STRIP DOWN NG GPS NAVIGATION POSITION ARRANGE ---
-                  const Text(
-                    "📍 GPS Anchor Position (Optional)",
-                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent, fontSize: 14),
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // LATITUDE BLOCK
-                  Row(
-                    children: [
-                      const SizedBox(width: 45, child: Text("LAT:", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70))),
-                      Expanded(
-                        flex: 3,
-                        child: TextField(
-                          controller: _latDegController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Deg (°)', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
-                        ),
+                  items: _seabedTypes.map((String type) {
+                    return DropdownMenuItem<String>(value: type, child: Text(type));
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() { _selectedSeabed = newValue!; });
+                  },
+                ),
+                const SizedBox(height: 20),
+                
+                const Text(
+                  "📍 GPS Anchor Position (Optional)",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent, fontSize: 14),
+                ),
+                const SizedBox(height: 12),
+                
+                // LATITUDE BLOCK
+                Row(
+                  children: [
+                    const SizedBox(width: 45, child: Text("LAT:", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70))),
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        controller: _latDegController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'Deg (°)', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 4,
-                        child: TextField(
-                          controller: _latMinController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Min (\')', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 3,
-                        child: DropdownButtonFormField<String>(
-                          value: _latDirection,
-                          decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
-                          items: ['N', 'S'].map((dir) => DropdownMenuItem(value: dir, child: Text(dir))).toList(),
-                          onChanged: (val) => setState(() => _latDirection = val!),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  
-                  // LONGITUDE BLOCK
-                  Row(
-                    children: [
-                      const SizedBox(width: 45, child: Text("LONG:", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70))),
-                      Expanded(
-                        flex: 3,
-                        child: TextField(
-                          controller: _lngDegController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Deg (°)', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 4,
-                        child: TextField(
-                          controller: _lngMinController,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          decoration: const InputDecoration(labelText: 'Min (\')', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 3,
-                        child: DropdownButtonFormField<String>(
-                          value: _lngDirection,
-                          decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
-                          items: ['E', 'W'].map((dir) => DropdownMenuItem(value: dir, child: Text(dir))).toList(),
-                          onChanged: (val) => setState(() => _lngDirection = val!),
-                        ),
-                      ),
-                    ],
-                  ),
-                  // --- TAPOS NG NAV SECTION ---
-                  
-                  const SizedBox(height: 25),
-                  ElevatedButton.icon(
-                    onPressed: _calculatePro,
-                    icon: const Icon(Icons.analytics, color: Colors.black),
-                    label: const Text(
-                      'CALCULATE PRO & SAVE LOG',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.tealAccent,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 4,
+                      child: TextField(
+                        controller: _latMinController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(labelText: 'Min (\')', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
+                      ),
                     ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      child: DropdownButtonFormField<String>(
+                        value: _latDirection,
+                        decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+                        items: ['N', 'S'].map((dir) => DropdownMenuItem(value: dir, child: Text(dir))).toList(),
+                        onChanged: (val) => setState(() => _latDirection = val!),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                
+                // LONGITUDE BLOCK
+                Row(
+                  children: [
+                    const SizedBox(width: 45, child: Text("LONG:", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70))),
+                    Expanded(
+                      flex: 3,
+                      child: TextField(
+                        controller: _lngDegController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'Deg (°)', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 4,
+                      child: TextField(
+                        controller: _lngMinController,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        decoration: const InputDecoration(labelText: 'Min (\')', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 3,
+                      child: DropdownButtonFormField<String>(
+                        value: _lngDirection,
+                        decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+                        items: ['E', 'W'].map((dir) => DropdownMenuItem(value: dir, child: Text(dir))).toList(),
+                        onChanged: (val) => setState(() => _lngDirection = val!),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 25),
+                ElevatedButton.icon(
+                  onPressed: _calculatePro,
+                  icon: const Icon(Icons.analytics, color: Colors.black),
+                  label: const Text(
+                    'CALCULATE PRO & SAVE LOG',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
                   ),
-                  const SizedBox(height: 25),
-                  if (_turningCircleMeters > 0)
-                    Card(
-                      color: const Color(0xFF1E293B),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      elevation: 4,
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: const Icon(Icons.linear_scale, color: Colors.tealAccent),
-                              title: const Text("Total Chain Length"),
-                              trailing: Text("${_totalChain.toStringAsFixed(1)} m", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.tealAccent,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 25),
+                if (_turningCircleMeters > 0)
+                  Card(
+                    color: const Color(0xFF1E293B),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Column(
+                        children: [
+                          ListTile(
+                            leading: const Icon(Icons.linear_scale, color: Colors.tealAccent),
+                            title: const Text("Total Chain Length"),
+                            trailing: Text("${_totalChain.toStringAsFixed(1)} m", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                          ),
+                          const Divider(color: Colors.white10),
+                          ListTile(
+                            leading: const Icon(Icons.radar, color: Colors.tealAccent),
+                            title: const Text("Turning Circle (Meters)"),
+                            trailing: Text("${_turningCircleMeters.toStringAsFixed(1)} m", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.tealAccent)),
+                          ),
+                          const Divider(color: Colors.white10),
+                          ListTile(
+                            leading: const Icon(Icons.explore, color: Colors.tealAccent),
+                            title: const Text("Turning Circle (Cables)"),
+                            trailing: Text("${_turningCircleCables.toStringAsFixed(2)} cbl", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.tealAccent)),
+                          ),
+                          const Divider(color: Colors.white10),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: _statusColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            const Divider(color: Colors.white10),
-                            ListTile(
-                              leading: const Icon(Icons.radar, color: Colors.tealAccent),
-                              title: const Text("Turning Circle (Meters)"),
-                              trailing: Text("${_turningCircleMeters.toStringAsFixed(1)} m", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.tealAccent)),
+                            child: Text(
+                              _statusMessage,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: _statusColor, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
-                            const Divider(color: Colors.white10),
-                            ListTile(
-                              leading: const Icon(Icons.explore, color: Colors.tealAccent),
-                              title: const Text("Turning Circle (Cables)"),
-                              trailing: Text("${_turningCircleCables.toStringAsFixed(2)} cbl", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.tealAccent)),
-                            ),
-                            const Divider(color: Colors.white10),
-                            Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                color: _statusColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                _statusMessage,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: _statusColor, fontWeight: FontWeight.bold, fontSize: 14),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
-                ],
-              ),
+                  ),
+              ],
             ),
           ),
-          const Text(
+        ),
+        // FIXED BOTTOM FOOTER PARA HINDI MAWALA ANG SIGNATURE
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          color: const Color(0xFF0F172A),
+          child: const Text(
             '🛠️ Developed by: Renante Fullo',
             textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.white38, fontSize: 11),
+            style: TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.w500),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -479,71 +478,88 @@ class HistoryTab extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(15),
-      itemCount: logs.length,
-      itemBuilder: (context, index) {
-        final log = logs[index];
-        return Card(
-          color: const Color(0xFF1E293B),
-          margin: const EdgeInsets.only(bottom: 15),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: ExpansionTile(
-            leading: const Icon(Icons.anchor, color: Colors.tealAccent),
-            title: Text(
-              "TC: ${log.turningCircle.toStringAsFixed(1)}m (${log.cables.toStringAsFixed(2)} cbl)",
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent),
-            ),
-            subtitle: Text(
-              "Time: ${log.timestamp}\nPsn: Lat: ${log.lat} | Lng: ${log.lng}",
-              style: const TextStyle(fontSize: 12, color: Colors.white60),
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
-              onPressed: () {
-                onDeleteLog(log.id);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Log entry deleted successfully!'), duration: Duration(seconds: 1)),
-                );
-              },
-            ),
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(15.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(15),
+            itemCount: logs.length,
+            itemBuilder: (context, index) {
+              final log = logs[index];
+              return Card(
+                color: const Color(0xFF1E293B),
+                margin: const EdgeInsets.only(bottom: 15),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: ExpansionTile(
+                  leading: const Icon(Icons.anchor, color: Colors.tealAccent),
+                  title: Text(
+                    "TC: ${log.turningCircle.toStringAsFixed(1)}m (${log.cables.toStringAsFixed(2)} cbl)",
+                    style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent),
+                  ),
+                  subtitle: Text(
+                    "Time: ${log.timestamp}\nPsn: Lat: ${log.lat} | Lng: ${log.lng}",
+                    style: const TextStyle(fontSize: 12, color: Colors.white60),
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+                    onPressed: () {
+                      onDeleteLog(log.id);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Log entry deleted successfully!'), duration: Duration(seconds: 1)),
+                      );
+                    },
+                  ),
                   children: [
-                    const Divider(color: Colors.white10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text("Depth: ${log.depth}m"),
-                        Text("LOA: ${log.loa}m"),
-                        Text("Shackles: ${log.shackles}"),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text("Seabed Type: ${log.seabed}", style: const TextStyle(fontWeight: FontWeight.w500)),
-                    const SizedBox(height: 8),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black26,
-                        borderRadius: BorderRadius.circular(6),
+                    Padding(
+                      padding: const EdgeInsets.all(15.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Divider(color: Colors.white10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text("Depth: ${log.depth}m"),
+                              Text("LOA: ${log.loa}m"),
+                              Text("Shackles: ${log.shackles}"),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text("Seabed Type: ${log.seabed}", style: const TextStyle(fontWeight: FontWeight.w500)),
+                          const SizedBox(height: 8),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.black26,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              log.status,
+                              style: const TextStyle(fontSize: 13, color: Colors.white70),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        log.status,
-                        style: const TextStyle(fontSize: 13, color: Colors.white70),
-                      ),
-                    ),
+                    )
                   ],
                 ),
-              )
-            ],
+              );
+            },
           ),
-        );
-      },
+        ),
+        // FIXED FOOTER PATI SA HISTORY LOG TAB
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          color: const Color(0xFF0F172A),
+          child: const Text(
+            '🛠️ Developed by: Renante Fullo',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white38, fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ),
+      ],
     );
   }
 }
