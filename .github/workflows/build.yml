@@ -14,31 +14,53 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Create Flutter Android Project
-        run: flutter create --platforms=android .
-
-      - name: Inject AndroidManifest
-        run: |
-          mkdir -p android/app/src/main
-          echo '<manifest xmlns:android="http://schemas.google.com/apk/res/android"><application android:label="Anchor Calculator" android:icon="@mipmap/ic_launcher"><activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize"><meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/NormalTheme"/><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><meta-data android:name="flutterEmbedding" android:value="2"/></application></manifest>' > android/app/src/main/AndroidManifest.xml
-
+      # 1. SETUP JAVA UNAHAN NATIN
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
+      # 2. SETUP FLUTTER
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
 
+      # 3. DOON PALANG GAGAWA NG PROJECT CONFIGURATIONS
+      - name: Create Flutter Android Project
+        run: flutter create --platforms=android .
+
+      # 4. GENERATE APP ICONS
+      - name: Generate Android App Icons
+        run: |
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          if [ -f "app_icon.png" ]; then
+            RES_PATH="android/app/src/main/res"
+            mkdir -p $RES_PATH/mipmap-mdpi && convert app_icon.png -resize 48x48 $RES_PATH/mipmap-mdpi/ic_launcher.png
+            mkdir -p $RES_PATH/mipmap-hdpi && convert app_icon.png -resize 72x72 $RES_PATH/mipmap-hdpi/ic_launcher.png
+            mkdir -p $RES_PATH/mipmap-xhdpi && convert app_icon.png -resize 96x96 $RES_PATH/mipmap-xhdpi/ic_launcher.png
+            mkdir -p $RES_PATH/mipmap-xxhdpi && convert app_icon.png -resize 144x144 $RES_PATH/mipmap-xxhdpi/ic_launcher.png
+            mkdir -p $RES_PATH/mipmap-xxxhdpi && convert app_icon.png -resize 192x192 $RES_PATH/mipmap-xxxhdpi/ic_launcher.png
+            echo "✅ App icons successfully generated from app_icon.png!"
+          else
+            echo "⚠️ app_icon.png not found, using default flutter icon."
+          fi
+
+      # 5. INJECT ANDROIDMANIFEST
+      - name: Inject AndroidManifest
+        run: |
+          mkdir -p android/app/src/main
+          echo '<manifest xmlns:android="http://schemas.google.com/apk/res/android"><application android:label="Anchor Calculator" android:icon="@mipmap/ic_launcher"><activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize"><meta-data android:name="io.flutter.embedding.android.NormalTheme" android:resource="@style/NormalTheme"/><intent-filter><action android:name="android.intent.action.MAIN"/><category android:name="android.intent.category.LAUNCHER"/></intent-filter></activity><meta-data android:name="flutterEmbedding" android:value="2"/></application></manifest>' > android/app/src/main/AndroidManifest.xml
+
+      # 6. INSTALL AND BUILD
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build APK
         run: flutter build apk --release
 
+      # 7. UPLOAD THE ARTIFACT
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
