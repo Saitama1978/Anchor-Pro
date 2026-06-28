@@ -71,37 +71,30 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       return;
     }
 
-    // 1 shackle = 27.5 meters
     double chainInMeters = shackles * 27.5;
     _totalChain = chainInMeters;
 
     if (chainInMeters <= depth) {
       setState(() {
-        _statusMessage = "❌ Error: Mas mahaba ang lalim ng dagat kaysa sa kadena!";
+        _statusMessage = "❌ Error: Mas mahaba ang lalim kaysa sa kadena!";
         _statusColor = Colors.redAccent;
         _turningCircleMeters = 0.0;
+        _turningCircleCables = 0.0;
       });
       return;
     }
 
-    // Advanced: Trigonometric Horizontal Distance (Pythagorean Theorem)
+    // Trigonometric Horizontal Distance
     double horizontalDistance = sqrt(pow(chainInMeters, 2) - pow(depth, 2));
-    
-    // Total Turning Circle Radius = Horizontal Distance + Ship's LOA
     double radiusMeters = horizontalDistance + loa;
     _turningCircleMeters = radiusMeters;
-    
-    // Convert meters to Cables (1 Cable = 185.2 Meters)
     _turningCircleCables = radiusMeters / 185.2;
 
-    // Scope Ratio Calculation
     double scope = chainInMeters / depth;
-
-    // Safety Threshold Configurations base sa Seabed Type
     double safeMinScope = 4.0; 
-    if (_selectedSeabed == 'Mud') safeMinScope = 5.0; // Kailangan ng mas mahabang kadena sa putik
-    if (_selectedSeabed == 'Clay') safeMinScope = 3.5; // Maganda ang kapit ng clay
-    if (_selectedSeabed == 'Rock') safeMinScope = 6.0; // Madaling sumadsad sa bato kaya kailangan ng bigat ng kadena
+    if (_selectedSeabed == 'Mud') safeMinScope = 5.0;
+    if (_selectedSeabed == 'Clay') safeMinScope = 3.5;
+    if (_selectedSeabed == 'Rock') safeMinScope = 6.0;
 
     setState(() {
       if (scope < safeMinScope) {
@@ -175,8 +168,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    
-                    // Dropdown para sa Seabed Type
                     DropdownButtonFormField<String>(
                       value: _selectedSeabed,
                       decoration: const InputDecoration(
@@ -196,7 +187,6 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       },
                     ),
                     const SizedBox(height: 25),
-                    
                     ElevatedButton.icon(
                       onPressed: _calculatePro,
                       icon: const Icon(Icons.analytics, color: Colors.white),
@@ -206,4 +196,5 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D9488),
-                        padding:Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shapeNormally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
