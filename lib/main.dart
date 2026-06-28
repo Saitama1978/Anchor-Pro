@@ -86,12 +86,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       return;
     }
 
-    // Trigonometric Horizontal Distance (Pythagorean Theorem)
+    // Advanced: Trigonometric Horizontal Distance (Pythagorean Theorem)
     double horizontalDistance = sqrt(pow(chainInMeters, 2) - pow(depth, 2));
     double radiusMeters = horizontalDistance + loa;
     
     _turningCircleMeters = radiusMeters;
-    _turningCircleCables = radiusMeters / 185.2; // 1 Cable = 185.2m
+    _turningCircleCables = radiusMeters / 185.2; // 1 Cable = 185.2 Meters
 
     double scope = chainInMeters / depth;
     double safeMinScope = 4.0; 
@@ -192,11 +192,91 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                     const SizedBox(height: 25),
                     ElevatedButton.icon(
                       onPressed: _calculatePro,
-                      icon: const Icon(Icons.analytics, color: Colors.white),
+                      icon: const Icon(Icons.analytics, color: Colors.black),
                       label: const Text(
                         'CALCULATE PRO',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0D9488),
-                        padding:Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                        backgroundColor: Colors.tealAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    if (_turningCircleMeters > 0)
+                      Card(
+                        color: const Color(0xFF1E293B),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 4,
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Column(
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.linear_scale, color: Colors.tealAccent),
+                                title: const Text("Total Chain Length"),
+                                trailing: Text(
+                                  "${_totalChain.toStringAsFixed(1)} m",
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              const Divider(color: Colors.white10),
+                              ListTile(
+                                leading: const Icon(Icons.radar, color: Colors.tealAccent),
+                                title: const Text("Turning Circle (Meters)"),
+                                trailing: Text(
+                                  "${_turningCircleMeters.toStringAsFixed(1)} m",
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.tealAccent),
+                                ),
+                              ),
+                              const Divider(color: Colors.white10),
+                              ListTile(
+                                leading: const Icon(Icons.explore, color: Colors.tealAccent),
+                                title: const Text("Turning Circle (Cables)"),
+                                trailing: Text(
+                                  "${_turningCircleCables.toStringAsFixed(2)} cbl",
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.tealAccent),
+                                ),
+                              ),
+                              const Divider(color: Colors.white10),
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: _statusColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _statusMessage,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: _statusColor,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            const Text(
+              '🛠️ Developed by: Renante Fullo',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white38, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
