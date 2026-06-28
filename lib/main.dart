@@ -31,22 +31,112 @@ class AnchorCalculatorApp extends StatelessWidget {
           prefixIconColor: Colors.tealAccent,
         ),
       ),
-      home: const CalculatorScreen(),
+      home: const MainTabScreen(),
     );
   }
 }
 
-class CalculatorScreen extends StatefulWidget {
-  const CalculatorScreen({super.key});
+// Model para sa ating History Log
+class CalculationLog {
+  final String id;
+  final String timestamp;
+  final double depth;
+  final double loa;
+  final double shackles;
+  final String seabed;
+  final double turningCircle;
+  final double cables;
+  final String lat;
+  final String lng;
+  final String status;
 
-  @override
-  State<CalculatorScreen> createState() => _CalculatorScreenState();
+  CalculationLog({
+    required this.id,
+    required this.timestamp,
+    required this.depth,
+    required this.loa,
+    required this.shackles,
+    required this.seabed,
+    required this.turningCircle,
+    required this.cables,
+    required this.lat,
+    required this.lng,
+    required this.status,
+  });
 }
 
-class _CalculatorScreenState extends State<CalculatorScreen> {
+class MainTabScreen extends StatefulWidget {
+  const MainTabScreen({super.key});
+
+  @override
+  State<MainTabScreen> createState() => _MainTabScreenState();
+}
+
+class _MainTabScreenState extends State<MainTabScreen> {
+  // Global State para sa ating listahan ng History Logs
+  final List<CalculationLog> _historyLogs = [];
+
+  void _addLog(CalculationLog newLog) {
+    setState(() {
+      _historyLogs.insert(0, newLog); // Ilagay sa pinakataas ang pinakabago
+    });
+  }
+
+  void _deleteLog(String id) {
+    setState(() {
+      _historyLogs.removeWhere((log) => log.id == id);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            '⚓ ANCHOR CALCULATOR PRO',
+            style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          centerTitle: true,
+          elevation: 4,
+          bottom: const TabBar(
+            indicatorColor: Colors.tealAccent,
+            labelColor: Colors.tealAccent,
+            unselectedLabelColor: Colors.white60,
+            tabs: [
+              Tab(icon: Icon(Icons.calculate), text: "Calculator"),
+              Tab(icon: Icon(Icons.history), text: "History Log"),
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            CalculatorTab(onSaveLog: _addLog),
+            HistoryTab(logs: _historyLogs, onDeleteLog: _deleteLog),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// TAB 1: CALCULATOR SCREEN
+class CalculatorTab extends StatefulWidget {
+  final Function(CalculationLog) onSaveLog;
+  const CalculatorTab({super.key, required this.onSaveLog});
+
+  @override
+  State<CalculatorTab> createState() => _CalculatorTabState();
+}
+
+class _CalculatorTabState extends State<CalculatorTab> {
   final _depthController = TextEditingController();
   final _loaController = TextEditingController();
   final _shacklesController = TextEditingController(text: "7");
+  final _latController = TextEditingController();
+  final _lngController = TextEditingController();
   
   String _selectedSeabed = 'Sand';
   final List<String> _seabedTypes = ['Sand', 'Mud', 'Clay', 'Rock'];
@@ -61,6 +151,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     double depth = double.tryParse(_depthController.text) ?? 0.0;
     double loa = double.tryParse(_loaController.text) ?? 0.0;
     double shackles = double.tryParse(_shacklesController.text) ?? 0.0;
+    String latPsn = _latController.text.trim().isEmpty ? "N/A" : _latController.text.trim();
+    String lngPsn = _lngController.text.trim().isEmpty ? "N/A" : _lngController.text.trim();
 
     if (depth <= 0 || loa <= 0 || shackles <= 0) {
       setState(() {
@@ -86,12 +178,11 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       return;
     }
 
-    // Advanced: Trigonometric Horizontal Distance (Pythagorean Theorem)
     double horizontalDistance = sqrt(pow(chainInMeters, 2) - pow(depth, 2));
     double radiusMeters = horizontalDistance + loa;
     
     _turningCircleMeters = radiusMeters;
-    _turningCircleCables = radiusMeters / 185.2; // 1 Cable = 185.2 Meters
+    _turningCircleCables = radiusMeters / 185.2;
 
     double scope = chainInMeters / depth;
     double safeMinScope = 4.0; 
@@ -99,18 +190,41 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     if (_selectedSeabed == 'Clay') safeMinScope = 3.5;
     if (_selectedSeabed == 'Rock') safeMinScope = 6.0;
 
+    String calculatedStatus = "";
+    if (scope < safeMinScope) {
+      calculatedStatus = "⚠️ WARNING: Short Scope for $_selectedSeabed bottom!\nScope Ratio: ${scope.toStringAsFixed(1)} (Min Safe: $safeMinScope)";
+      _statusColor = Colors.redAccent;
+    } else if (scope >= safeMinScope && scope <= (safeMinScope + 2)) {
+      calculatedStatus = "✅ SAFE: Good holding power for $_selectedSeabed.\nScope Ratio: ${scope.toStringAsFixed(1)}";
+      _statusColor = Colors.greenAccent;
+    } else {
+      calculatedStatus = "🌊 HEAVY SCOPE: Excellent safety margins.\nScope Ratio: ${scope.toStringAsFixed(1)}";
+      _statusColor = Colors.blueAccent;
+    }
+
     setState(() {
-      if (scope < safeMinScope) {
-        _statusMessage = "⚠️ WARNING: Short Scope for $_selectedSeabed bottom!\nScope Ratio: ${scope.toStringAsFixed(1)} (Min Safe: $safeMinScope)";
-        _statusColor = Colors.redAccent;
-      } else if (scope >= safeMinScope && scope <= (safeMinScope + 2)) {
-        _statusMessage = "✅ SAFE: Good holding power for $_selectedSeabed.\nScope Ratio: ${scope.toStringAsFixed(1)}";
-        _statusColor = Colors.greenAccent;
-      } else {
-        _statusMessage = "🌊 HEAVY SCOPE: Excellent safety margins.\nScope Ratio: ${scope.toStringAsFixed(1)}";
-        _statusColor = Colors.blueAccent;
-      }
+      _statusMessage = calculatedStatus;
     });
+
+    // Awtomatikong i-save sa log history pagkatapos mag-kalkula
+    final now = DateTime.now();
+    final timeString = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')} (${now.day}/${now.month}/${now.year})";
+    
+    final newLog = CalculationLog(
+      id: now.millisecondsSinceEpoch.toString(),
+      timestamp: timeString,
+      depth: depth,
+      loa: loa,
+      shackles: shackles,
+      seabed: _selectedSeabed,
+      turningCircle: _turningCircleMeters,
+      cables: _turningCircleCables,
+      lat: latPsn,
+      lng: lngPsn,
+      status: calculatedStatus.replaceAll('\n', ' '),
+    );
+
+    widget.onSaveLog(newLog);
   }
 
   @override
@@ -118,165 +232,254 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
     _depthController.dispose();
     _loaController.dispose();
     _shacklesController.dispose();
+    _latController.dispose();
+    _lngController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          '⚓ ANCHOR CALCULATOR PRO',
-          style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1.2),
-        ),
-        backgroundColor: const Color(0xFF1E293B),
-        centerTitle: true,
-        elevation: 4,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 10),
-                    TextField(
-                      controller: _depthController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Water Depth (Meters)',
-                        prefixIcon: Icon(Icons.waves),
-                      ),
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _depthController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Water Depth (Meters)',
+                      prefixIcon: Icon(Icons.waves),
                     ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _loaController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: "Ship's LOA (Meters)",
-                        prefixIcon: Icon(Icons.directions_boat),
-                      ),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: _loaController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: "Ship's LOA (Meters)",
+                      prefixIcon: Icon(Icons.directions_boat),
                     ),
-                    const SizedBox(height: 20),
-                    TextField(
-                      controller: _shacklesController,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Shackles to Let Go',
-                        prefixIcon: Icon(Icons.link),
-                      ),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: _shacklesController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Shackles to Let Go',
+                      prefixIcon: Icon(Icons.link),
                     ),
-                    const SizedBox(height: 20),
-                    DropdownButtonFormField<String>(
-                      value: _selectedSeabed,
-                      decoration: const InputDecoration(
-                        labelText: 'Seabed Type (Bottom Condition)',
-                        prefixIcon: Icon(Icons.layers),
-                      ),
-                      items: _seabedTypes.map((String type) {
-                        return DropdownMenuItem<String>(
-                          value: type,
-                          child: Text(type),
-                        );
-                      }).toList(),
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedSeabed = newValue!;
-                        });
-                      },
+                  ),
+                  const SizedBox(height: 15),
+                  DropdownButtonFormField<String>(
+                    value: _selectedSeabed,
+                    decoration: const InputDecoration(
+                      labelText: 'Seabed Type (Bottom Condition)',
+                      prefixIcon: Icon(Icons.layers),
                     ),
-                    const SizedBox(height: 25),
-                    ElevatedButton.icon(
-                      onPressed: _calculatePro,
-                      icon: const Icon(Icons.analytics, color: Colors.black),
-                      label: const Text(
-                        'CALCULATE PRO',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.tealAccent,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                    if (_turningCircleMeters > 0)
-                      Card(
-                        color: const Color(0xFF1E293B),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 4,
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.linear_scale, color: Colors.tealAccent),
-                                title: const Text("Total Chain Length"),
-                                trailing: Text(
-                                  "${_totalChain.toStringAsFixed(1)} m",
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              const Divider(color: Colors.white10),
-                              ListTile(
-                                leading: const Icon(Icons.radar, color: Colors.tealAccent),
-                                title: const Text("Turning Circle (Meters)"),
-                                trailing: Text(
-                                  "${_turningCircleMeters.toStringAsFixed(1)} m",
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.tealAccent),
-                                ),
-                              ),
-                              const Divider(color: Colors.white10),
-                              ListTile(
-                                leading: const Icon(Icons.explore, color: Colors.tealAccent),
-                                title: const Text("Turning Circle (Cables)"),
-                                trailing: Text(
-                                  "${_turningCircleCables.toStringAsFixed(2)} cbl",
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.tealAccent),
-                                ),
-                              ),
-                              const Divider(color: Colors.white10),
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: _statusColor.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  _statusMessage,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    color: _statusColor,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                            ],
+                    items: _seabedTypes.map((String type) {
+                      return DropdownMenuItem<String>(value: type, child: Text(type));
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() { _selectedSeabed = newValue!; });
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  // GPS ANCHOR POSITION SECTION
+                  const Text(
+                    "📍 GPS Anchor Position (Optional)",
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent, fontSize: 14),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _latController,
+                          decoration: const InputDecoration(
+                            labelText: 'Latitude (e.g. 14°35.6\' N)',
+                            prefixIcon: Icon(Icons.location_on),
                           ),
                         ),
                       ),
-                  ],
-                ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: _lngController,
+                          decoration: const InputDecoration(
+                            labelText: 'Longitude (e.g. 120°58.2\' E)',
+                            prefixIcon: Icon(Icons.location_on),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+                  ElevatedButton.icon(
+                    onPressed: _calculatePro,
+                    icon: const Icon(Icons.analytics, color: Colors.black),
+                    label: const Text(
+                      'CALCULATE PRO & SAVE LOG',
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.black),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.tealAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                  const SizedBox(height: 25),
+                  if (_turningCircleMeters > 0)
+                    Card(
+                      color: const Color(0xFF1E293B),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      elevation: 4,
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.linear_scale, color: Colors.tealAccent),
+                              title: const Text("Total Chain Length"),
+                              trailing: Text("${_totalChain.toStringAsFixed(1)} m", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+                            ),
+                            const Divider(color: Colors.white10),
+                            ListTile(
+                              leading: const Icon(Icons.radar, color: Colors.tealAccent),
+                              title: const Text("Turning Circle (Meters)"),
+                              trailing: Text("${_turningCircleMeters.toStringAsFixed(1)} m", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.tealAccent)),
+                            ),
+                            const Divider(color: Colors.white10),
+                            ListTile(
+                              leading: const Icon(Icons.explore, color: Colors.tealAccent),
+                              title: const Text("Turning Circle (Cables)"),
+                              trailing: Text("${_turningCircleCables.toStringAsFixed(2)} cbl", style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.tealAccent)),
+                            ),
+                            const Divider(color: Colors.white10),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: _statusColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                _statusMessage,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: _statusColor, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
-            const Text(
-              '🛠️ Developed by: Renante Fullo',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.white38, fontSize: 12),
-            ),
+          ),
+          const Text(
+            '🛠️ Developed by: Renante Fullo',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white38, fontSize: 11),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// TAB 2: HISTORY LOG SCREEN
+class HistoryTab extends StatelessWidget {
+  final List<CalculationLog> logs;
+  final Function(String) onDeleteLog;
+
+  const HistoryTab({super.key, required this.logs, required this.onDeleteLog});
+
+  @override
+  Widget build(BuildContext context) {
+    if (logs.isEmpty) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.history_toggle_off, size: 64, color: Colors.white24),
+            SizedBox(height: 10),
+            Text("No history logs found.", style: TextStyle(color: Colors.white38, fontSize: 16)),
+            Text("Mag-calculate muna sa kabilang tab.", style: TextStyle(color: Colors.white24, fontSize: 14)),
           ],
         ),
-      ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(15),
+      itemCount: logs.length,
+      itemBuilder: (context, index) {
+        final log = logs[index];
+        return Card(
+          color: const Color(0xFF1E293B),
+          margin: const EdgeInsets.only(bottom: 15),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ExpansionTile(
+            leading: const Icon(Icons.anchor, color: Colors.tealAccent),
+            title: Text(
+              "TC: ${log.turningCircle.toStringAsFixed(1)}m (${log.cables.toStringAsFixed(2)} cbl)",
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent),
+            ),
+            subtitle: Text("Time: ${log.timestamp}\nPsn: Lat: ${log.lat} | Lng: ${log.lng}", style: const TextStyle(fontSize: 12, color: Colors.white55)),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+              onPressed: () {
+                // Pagpindot ng trash icon, buburahin ang log
+                onDeleteLog(log.id);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Log entry deleted successfully!'), duration: Duration(seconds: 1)),
+                );
+              },
+            ),
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(15.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Divider(color: Colors.white10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text("Depth: ${log.depth}m"),
+                        Text("LOA: ${log.loa}m"),
+                        Text("Shackles: ${log.shackles}"),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text("Seabed Type: ${log.seabed}", style: const TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.black26,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        log.status,
+                        style: const TextStyle(fontSize: 13, color: Colors.white70),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+      },
     );
   }
 }
