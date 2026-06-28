@@ -189,7 +189,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                                     const SizedBox(width: 10),
                                     Text(
                                       'Total Chain: ${_totalChain.toStringAsFixed(1)} m',
-                                      style: const TextStyle(fontSize: 16, color: Colors.white90),
+                                      style: const TextStyle(fontSize: 16, color: Colors.white70),
                                     ),
                                   ],
                                 ),
