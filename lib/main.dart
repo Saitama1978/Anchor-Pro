@@ -67,6 +67,8 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
         _statusMessage = "⚠️ Paki-kumpleto ang mga detalye.";
         _statusColor = Colors.orangeAccent;
         _totalChain = 0.0;
+        _turningCircleMeters = 0.0;
+        _turningCircleCables = 0.0;
       });
       return;
     }
@@ -84,11 +86,12 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       return;
     }
 
-    // Trigonometric Horizontal Distance
+    // Trigonometric Horizontal Distance Calculation
     double horizontalDistance = sqrt(pow(chainInMeters, 2) - pow(depth, 2));
     double radiusMeters = horizontalDistance + loa;
+    
     _turningCircleMeters = radiusMeters;
-    _turningCircleCables = radiusMeters / 185.2;
+    _turningCircleCables = radiusMeters / 185.2; // 1 Cable = 185.2m
 
     double scope = chainInMeters / depth;
     double safeMinScope = 4.0; 
@@ -196,4 +199,4 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D9488),
-                        padding:Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                        padding: const EdgeInsets.symmetric(Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
