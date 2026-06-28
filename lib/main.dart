@@ -36,7 +36,6 @@ class AnchorCalculatorApp extends StatelessWidget {
   }
 }
 
-// Model para sa ating History Log
 class CalculationLog {
   final String id;
   final String timestamp;
@@ -73,12 +72,11 @@ class MainTabScreen extends StatefulWidget {
 }
 
 class _MainTabScreenState extends State<MainTabScreen> {
-  // Global State para sa ating listahan ng History Logs
   final List<CalculationLog> _historyLogs = [];
 
   void _addLog(CalculationLog newLog) {
     setState(() {
-      _historyLogs.insert(0, newLog); // Ilagay sa pinakataas ang pinakabago
+      _historyLogs.insert(0, newLog);
     });
   }
 
@@ -122,7 +120,6 @@ class _MainTabScreenState extends State<MainTabScreen> {
   }
 }
 
-// TAB 1: CALCULATOR SCREEN
 class CalculatorTab extends StatefulWidget {
   final Function(CalculationLog) onSaveLog;
   const CalculatorTab({super.key, required this.onSaveLog});
@@ -206,7 +203,6 @@ class _CalculatorTabState extends State<CalculatorTab> {
       _statusMessage = calculatedStatus;
     });
 
-    // Awtomatikong i-save sa log history pagkatapos mag-kalkula
     final now = DateTime.now();
     final timeString = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')} (${now.day}/${now.month}/${now.year})";
     
@@ -291,7 +287,6 @@ class _CalculatorTabState extends State<CalculatorTab> {
                     },
                   ),
                   const SizedBox(height: 20),
-                  // GPS ANCHOR POSITION SECTION
                   const Text(
                     "📍 GPS Anchor Position (Optional)",
                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent, fontSize: 14),
@@ -394,7 +389,6 @@ class _CalculatorTabState extends State<CalculatorTab> {
   }
 }
 
-// TAB 2: HISTORY LOG SCREEN
 class HistoryTab extends StatelessWidget {
   final List<CalculationLog> logs;
   final Function(String) onDeleteLog;
@@ -432,11 +426,13 @@ class HistoryTab extends StatelessWidget {
               "TC: ${log.turningCircle.toStringAsFixed(1)}m (${log.cables.toStringAsFixed(2)} cbl)",
               style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent),
             ),
-            subtitle: Text("Time: ${log.timestamp}\nPsn: Lat: ${log.lat} | Lng: ${log.lng}", style: const TextStyle(fontSize: 12, color: Colors.white55)),
+            subtitle: Text(
+              "Time: ${log.timestamp}\nPsn: Lat: ${log.lat} | Lng: ${log.lng}",
+              style: const TextStyle(fontSize: 12, color: Colors.white60),
+            ),
             trailing: IconButton(
               icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
               onPressed: () {
-                // Pagpindot ng trash icon, buburahin ang log
                 onDeleteLog(log.id);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Log entry deleted successfully!'), duration: Duration(seconds: 1)),
