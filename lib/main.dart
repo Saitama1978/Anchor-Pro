@@ -132,8 +132,15 @@ class _CalculatorTabState extends State<CalculatorTab> {
   final _depthController = TextEditingController();
   final _loaController = TextEditingController();
   final _shacklesController = TextEditingController(text: "7");
-  final _latController = TextEditingController();
-  final _lngController = TextEditingController();
+  
+  // Mga baguhang controllers para sa detalyadong GPS input
+  final _latDegController = TextEditingController();
+  final _latMinController = TextEditingController();
+  final _lngDegController = TextEditingController();
+  final _lngMinController = TextEditingController();
+  
+  String _latDirection = 'N';
+  String _lngDirection = 'E';
   
   String _selectedSeabed = 'Sand';
   final List<String> _seabedTypes = ['Sand', 'Mud', 'Clay', 'Rock'];
@@ -148,8 +155,17 @@ class _CalculatorTabState extends State<CalculatorTab> {
     double depth = double.tryParse(_depthController.text) ?? 0.0;
     double loa = double.tryParse(_loaController.text) ?? 0.0;
     double shackles = double.tryParse(_shacklesController.text) ?? 0.0;
-    String latPsn = _latController.text.trim().isEmpty ? "N/A" : _latController.text.trim();
-    String lngPsn = _lngController.text.trim().isEmpty ? "N/A" : _lngController.text.trim();
+
+    // Pagbuo ng maayos na string format para sa GPS position logs
+    String latPsn = "N/A";
+    if (_latDegController.text.isNotEmpty && _latMinController.text.isNotEmpty) {
+      latPsn = "${_latDegController.text}° ${_latMinController.text}' $_latDirection";
+    }
+
+    String lngPsn = "N/A";
+    if (_lngDegController.text.isNotEmpty && _lngMinController.text.isNotEmpty) {
+      lngPsn = "${_lngDegController.text}° ${_lngMinController.text}' $_lngDirection";
+    }
 
     if (depth <= 0 || loa <= 0 || shackles <= 0) {
       setState(() {
@@ -228,8 +244,10 @@ class _CalculatorTabState extends State<CalculatorTab> {
     _depthController.dispose();
     _loaController.dispose();
     _shacklesController.dispose();
-    _latController.dispose();
-    _lngController.dispose();
+    _latDegController.dispose();
+    _latMinController.dispose();
+    _lngDegController.dispose();
+    _lngMinController.dispose();
     super.dispose();
   }
 
@@ -287,34 +305,84 @@ class _CalculatorTabState extends State<CalculatorTab> {
                     },
                   ),
                   const SizedBox(height: 20),
+                  
+                  // --- BAGONG SAKOP: STRIP DOWN NG GPS NAVIGATION POSITION ARRANGE ---
                   const Text(
                     "📍 GPS Anchor Position (Optional)",
                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.tealAccent, fontSize: 14),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
+                  
+                  // LATITUDE BLOCK
                   Row(
                     children: [
+                      const SizedBox(width: 45, child: Text("LAT:", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70))),
                       Expanded(
+                        flex: 3,
                         child: TextField(
-                          controller: _latController,
-                          decoration: const InputDecoration(
-                            labelText: 'Latitude (e.g. 14°35.6\' N)',
-                            prefixIcon: Icon(Icons.location_on),
-                          ),
+                          controller: _latDegController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'Deg (°)', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       Expanded(
+                        flex: 4,
                         child: TextField(
-                          controller: _lngController,
-                          decoration: const InputDecoration(
-                            labelText: 'Longitude (e.g. 120°58.2\' E)',
-                            prefixIcon: Icon(Icons.location_on),
-                          ),
+                          controller: _latMinController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Min (\')', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 3,
+                        child: DropdownButtonFormField<String>(
+                          value: _latDirection,
+                          decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+                          items: ['N', 'S'].map((dir) => DropdownMenuItem(value: dir, child: Text(dir))).toList(),
+                          onChanged: (val) => setState(() => _latDirection = val!),
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 12),
+                  
+                  // LONGITUDE BLOCK
+                  Row(
+                    children: [
+                      const SizedBox(width: 45, child: Text("LONG:", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white70))),
+                      Expanded(
+                        flex: 3,
+                        child: TextField(
+                          controller: _lngDegController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(labelText: 'Deg (°)', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 4,
+                        child: TextField(
+                          controller: _lngMinController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          decoration: const InputDecoration(labelText: 'Min (\')', contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        flex: 3,
+                        child: DropdownButtonFormField<String>(
+                          value: _lngDirection,
+                          decoration: const InputDecoration(contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 5)),
+                          items: ['E', 'W'].map((dir) => DropdownMenuItem(value: dir, child: Text(dir))).toList(),
+                          onChanged: (val) => setState(() => _lngDirection = val!),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // --- TAPOS NG NAV SECTION ---
+                  
                   const SizedBox(height: 25),
                   ElevatedButton.icon(
                     onPressed: _calculatePro,
