@@ -86,7 +86,7 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
       return;
     }
 
-    // Trigonometric Horizontal Distance Calculation
+    // Trigonometric Horizontal Distance (Pythagorean Theorem)
     double horizontalDistance = sqrt(pow(chainInMeters, 2) - pow(depth, 2));
     double radiusMeters = horizontalDistance + loa;
     
@@ -199,4 +199,4 @@ class _CalculatorScreenState extends State<CalculatorScreen> {
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D9488),
-                        padding: const EdgeInsets.symmetric(Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
+                        padding:Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
